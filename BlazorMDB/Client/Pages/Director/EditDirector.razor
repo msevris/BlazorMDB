@@ -1,0 +1,32 @@
+﻿@page "/director/edit/{DirectorId:int}"
+@inject IDirectorRepository directorRepository
+@inject NavigationManager navigationManager
+
+<div class="card shadow-sm text-secondary p-3 mb-5 mt-2 col-md-10"
+     role="alert">
+    <div class="card-header" style="background-color:white">
+        <span class="oi oi-pencil mr-2 text-primary"></span>
+        <strong class="text-primary">Edit a Director from Database</strong>
+    </div>
+    <br />
+    <div class="card-body">
+        @if (Director != null)
+        {
+            <DirectorForm Director="Director" OnValidSubmit="Edit" />
+        }
+    </div>
+</div>
+@code {
+    [Parameter] public int DirectorId { get; set; }
+    Director Director;
+
+    protected async override Task OnInitializedAsync()
+    {
+        Director = await directorRepository.GetDirectorById(DirectorId);
+    }
+    private async Task Edit()
+    {
+        await directorRepository.UpdateDirector(Director);
+        navigationManager.NavigateTo("director");
+    }
+}

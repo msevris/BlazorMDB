@@ -1,0 +1,32 @@
+﻿@page "/genre/create"
+@inject IGenreRepository genreRepository
+@inject NavigationManager navigationManager
+
+<div class="card shadow-sm text-secondary p-3 mb-5 mt-2 col-md-10"
+     role="alert">
+    <div class="card-header" style="background-color:white">
+        <span class="oi oi-pencil mr-2 text-primary"></span>
+        <strong class="text-primary">Movie Genre</strong>
+    </div>
+    <br />
+    <div class="card-body">
+        <GenreForm Genre="genre" OnValidSubmit="Create" />
+    </div>
+</div>
+
+@code {
+    private Genre genre = new Genre();
+    private async Task Create()
+    {
+
+        try
+        {
+            await genreRepository.CreateGenre(genre);
+            navigationManager.NavigateTo("genres");
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine(ex.Message);
+        }
+    }
+}

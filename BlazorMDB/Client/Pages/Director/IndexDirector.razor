@@ -1,0 +1,74 @@
+﻿@page "/director"
+@inject IDirectorRepository directorRepository
+
+<div class="form-group">
+    <a class="btn btn-primary btn-sm" href="director/create">Add New Director</a>
+</div>
+<div class="card shadow-sm text-secondary p-3 mb-5 mt-2 col-md-10"
+     role="alert">
+    <div class="card-header" style="background-color:white">
+        <span class="oi oi-pencil mr-2 text-primary"></span>
+        <strong class="text-primary">Add a Director to Database</strong>
+    </div>
+    <br />
+    <div class="card-body">
+        <GenericList List="Directors">
+            <WholeListTemplate>
+                @foreach (var item in Directors)
+                {
+                    <div class="row">
+                        <div class="col">
+                            <img style="width:48px;height:67px;margin-bottom:4px;border-radius:2px;" src="@item.Picture" />
+                            <span style="display:inline-block;width:150px;margin-left:20px;"><a href="/person/@item.Id/@item.Name.Replace(" ","")">@item.Name</a></span>
+                            <span style="margin-left:150px;">
+                                <a class="btn btn-primary btn-sm" href="/person/edit/@item.Id">Edit</a>
+                                <button class="btn btn-outline-danger btn-sm" @onclick="@(() => DeleteDirector(item.Id))">Delete</button>
+                            </span>
+                        </div>
+                    </div>
+                }
+
+            </WholeListTemplate>
+        </GenericList>
+    </div>
+</div>
+
+<Pagination CurrentPage="@paginationDTO.Page" TotalAmountPages="totalAmountPages"
+            SelectedPage="SelectedPage" />
+
+@code {
+    List<Director> Directors;
+
+    PaginationDTO paginationDTO = new PaginationDTO() { RecordsPerPage = 6 };
+
+    private int totalAmountPages;
+
+    protected override async Task OnInitializedAsync()
+    {
+        try
+        {
+            await LoadDirectors();
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine(ex.Message);
+        }
+    }
+
+    private async Task LoadDirectors()
+    {
+        var paginatedResponse = await directorRepository.GetDirectors(paginationDTO);
+        Directors = paginatedResponse.Response;
+        totalAmountPages = paginatedResponse.TotalAmountPages;
+    }
+    private async Task DeleteDirector(int id)
+    {
+        await directorRepository.DeleteDirector(id);
+        await LoadDirectors();
+    }
+    private async Task SelectedPage(int page)
+    {
+        paginationDTO.Page = page;
+        await LoadDirectors();
+    }
+}

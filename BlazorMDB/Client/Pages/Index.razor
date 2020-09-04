@@ -1,0 +1,37 @@
+﻿@page "/"
+@page "/index"
+@inject IMoviesRepository moviesRepository 
+
+<MovieList Movies="Movies"/>
+<Pagination CurrentPage="@paginationDTO.Page" TotalAmountPages="totalAmountPages"
+                SelectedPage="SelectedPage" />
+
+@code {
+    private List<Movie> Movies;
+    PaginationDTO paginationDTO = new PaginationDTO() { RecordsPerPage = 12 };
+    private int totalAmountPages;
+
+    protected async override Task OnInitializedAsync()
+    {
+        try
+        {
+            await LoadMovies();
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine(ex.Message);
+        }
+    }
+
+    private async Task LoadMovies()
+    {
+        var paginatedResponse = await moviesRepository.GetMovies(paginationDTO);
+        Movies = paginatedResponse.Response;
+        totalAmountPages = paginatedResponse.TotalAmountPages;
+    }
+    private async Task SelectedPage(int page)
+    {
+        paginationDTO.Page = page;
+        await LoadMovies();
+    }
+}

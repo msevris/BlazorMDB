@@ -1,0 +1,25 @@
+﻿@inherits LayoutComponentBase
+
+<div class="sidebar">
+    <NavMenu />
+</div>
+
+<div class="main">
+    <div class="top-row shadow-sm navbar-dark text-primary px-4">
+        <div>
+            <a>
+                <h5 style="margin-top:6px;"
+                    class="text-primary">
+                    Database for <strong>Movies</strong> | <strong>Actors</strong> | <strong>Directors</strong>
+                </h5>
+            </a>
+        </div>
+        <a href="/index">Home</a>
+        <a href="/movies/search">Browse Movies</a>
+        <a href="http://blazor.net" target="_blank">About</a>
+    </div>
+
+    <div class="content px-4">
+        @Body
+    </div>
+</div>

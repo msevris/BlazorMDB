@@ -1,0 +1,64 @@
+﻿@page "/genres"
+@inject IGenreRepository genreRepository
+
+    <div class="form-group">
+        <a class="btn btn-primary btn-sm" href="genre/create">Add New Genre</a>
+    </div>
+    <div class="card shadow-sm text-secondary p-3 mb-5 mt-2 col-md-8"
+     role="alert">
+    <div class="card-header" style="background-color:white">
+        <span class="oi oi-pencil mr-2 text-primary"></span>
+        <strong class="text-primary">Create a Genre to Database</strong>
+    </div>
+    <br />
+    <div class="card-body">
+        <GenericList List="Genres">
+            <WholeListTemplate>
+                <table class="table table-striped" style="max-height:768px">
+                    <thead>
+                        <tr>
+                            <th style="width:30%"></th>
+                            <th class="text-primary"><strong>Genre</strong></th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var item in Genres)
+                        {
+                            <tr>
+                                <td>
+                                    <a class="btn btn-primary btn-sm" href="/genre/edit/@item.Id">Edit</a>
+                                    <button class="btn btn-outline-danger btn-sm" @onclick="@(() => DeleteGenres(item.Id))">Delete</button>
+                                </td>
+                                <td>
+                                    @item.Name
+                                </td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </WholeListTemplate>
+        </GenericList>
+    </div>
+    </div>
+
+
+@code {
+    List<Genre> Genres;
+
+    protected override async Task OnInitializedAsync()
+    {
+        try
+        {
+            Genres = await genreRepository.GetGenres();
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine(ex.Message);
+        }
+    }
+    private async Task DeleteGenres(int Id)
+    {
+        await genreRepository.DeleteGenre(Id);
+        Genres = await genreRepository.GetGenres();
+    }
+}

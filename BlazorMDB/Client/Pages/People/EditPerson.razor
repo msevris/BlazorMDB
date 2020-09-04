@@ -1,0 +1,32 @@
+﻿@page "/person/edit/{PersonId:int}"
+@inject IPersonRepository personRepository
+@inject NavigationManager navigationManager
+ 
+<div class="card shadow-sm text-secondary p-3 mb-5 mt-2 col-md-10"
+     role="alert">
+    <div class="card-header" style="background-color:white">
+        <span class="oi oi-pencil mr-2 text-primary"></span>
+        <strong class="text-primary">Edit a Person from Database</strong>
+    </div>
+    <br />
+    <div class="card-body">
+        @if (Person != null)
+        {
+            <PersonForm Person="Person" OnValidSubmit="Edit" />
+        }
+    </div>
+</div>
+@code {
+    [Parameter] public int PersonId { get; set; }
+    Person Person;
+
+    protected async override Task OnInitializedAsync()
+    {
+       Person = await personRepository.GetPersonById(PersonId);
+    }
+    private async Task Edit()
+    {
+        await personRepository.UpdatePerson(Person);
+        navigationManager.NavigateTo("people");
+    }
+}

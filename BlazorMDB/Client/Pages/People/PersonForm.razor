@@ -1,0 +1,56 @@
+﻿<EditForm Model="Person" OnValidSubmit="OnValidSubmit">
+    <DataAnnotationsValidator />
+    <div class="row">
+        <div class="col">
+            <div class="form-group">
+                <label><strong>Name:</strong></label>
+                <div>
+                    <InputText class="form-control" @bind-Value="Person.Name" />
+                    <ValidationMessage For="@(() => Person.Name)" />
+                </div>
+            </div>
+            <div class="form-group">
+                <label><strong>Date Of Birth:</strong></label>
+                <div>
+                    <InputDate class="form-control" @bind-Value="Person.DateOfBirth" />
+                    <ValidationMessage For="@(() => Person.DateOfBirth)" />
+                </div>
+            </div>
+            <div class="form-group form-markdown">
+                <InputMarkdown @bind-Value="Person.Biography"
+                               Label="Biography"
+                               For="@(() => Person.Biography)" />
+            </div>
+        </div>
+        <div class="col">
+            <div class="form-group">
+                <label><strong>Select Image:</strong></label>
+                <InputImage Label="Person Picture" OnSelectedImage="PictureSelected"
+                            ImageURL="@imageUrl" />
+            </div>
+        </div>
+        
+    </div>
+    <button class="btn btn-primary btn-sm" type="submit">Save Changes</button>
+</EditForm>
+
+@code {
+    [Parameter] public Person Person { get; set; }
+    [Parameter] public EventCallback OnValidSubmit { get; set; }
+    string imageUrl;
+    
+    protected override void OnInitialized()
+    {
+        if (!string.IsNullOrEmpty(Person.Picture))
+        {
+            imageUrl = Person.Picture;
+            Person.Picture = null;
+        }
+    }
+    private void PictureSelected(string imageBase64)
+    {
+        Person.Picture = imageBase64;
+        imageBase64 = null;
+        Console.WriteLine(imageBase64);
+    }
+}

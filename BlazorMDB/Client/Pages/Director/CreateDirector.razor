@@ -1,0 +1,32 @@
+﻿@page "/director/create"
+@inject IDirectorRepository directorRepository
+@inject NavigationManager navigationManager
+
+<div class="card shadow-sm text-secondary p-3 mb-5 mt-2 col-md-10"
+     role="alert">
+    <div class="card-header" style="background-color:white">
+        <span class="oi oi-pencil mr-2 text-primary"></span>
+        <strong class="text-primary"> Director</strong>
+    </div>
+    <br />
+    <div class="card-body">
+        <DirectorForm Director="Director" OnValidSubmit="Create" />
+    </div>
+</div>
+
+@code {
+    Director Director = new Director();
+
+    private async Task Create()
+    {
+        try
+        {
+            await directorRepository.CreateDirector(Director);
+            navigationManager.NavigateTo("director");
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine(ex.Message);
+        }
+    }
+}

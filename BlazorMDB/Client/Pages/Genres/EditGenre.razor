@@ -1,0 +1,34 @@
+﻿@page "/genre/edit/{GenreId:int}"
+@inject IGenreRepository genreRepository
+@inject NavigationManager navigationManager 
+
+<div class="card shadow-sm text-secondary p-3 mb-5 mt-2 col-md-10"
+     role="alert">
+    <div class="card-header" style="background-color:white">
+        <span class="oi oi-pencil mr-2 text-primary"></span>
+        <strong class="text-primary">Edit a Genre from Database</strong>
+    </div>
+    <br />
+    <div class="card-body">
+        @if (genre != null)
+        {
+            <GenreForm Genre="genre" OnValidSubmit="Edit" />
+        }
+    </div>
+</div>
+
+@code {
+    [Parameter] public int GenreId { get; set; }
+    public Genre genre;
+
+    protected async override Task OnInitializedAsync()
+    {
+       genre = await genreRepository.GetGenre(GenreId);
+    }
+
+    private void Edit()
+    {
+        genreRepository.UpdateGenre(genre);
+        navigationManager.NavigateTo("genres");
+    }
+}

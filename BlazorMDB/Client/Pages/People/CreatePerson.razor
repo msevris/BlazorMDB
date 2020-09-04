@@ -1,0 +1,34 @@
+﻿@page "/person/create"
+@inject IPersonRepository personRepository
+@inject IDirectorRepository directorRepository
+@inject NavigationManager navigationManager
+
+<div class="card shadow-sm text-secondary p-3 mb-5 mt-2 col-md-10"
+     role="alert">
+    <div class="card-header" style="background-color:white">
+        <span class="oi oi-pencil mr-2 text-primary"></span>
+        <strong class="text-primary"> Actor | Director</strong>
+    </div>
+    <br />
+    <div class="card-body">
+        <PersonForm Person="Person" OnValidSubmit="Create" />
+    </div>
+</div>
+
+@code {
+    Person Person = new Person();
+    Director Director = new Director(); 
+
+    private async Task Create()
+    {
+        try
+        {
+            await personRepository.CreatePerson(Person);
+            navigationManager.NavigateTo("people");
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine(ex.Message);
+        }
+    }
+}

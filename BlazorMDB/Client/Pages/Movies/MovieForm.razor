@@ -1,0 +1,172 @@
+﻿@inject IPersonRepository personRepository
+@inject IDirectorRepository directorRepository
+
+<EditForm Model="Movie" OnValidSubmit="OnDataAnnotationsValidated">
+    <DataAnnotationsValidator />
+    <div class="row">
+        <div class="col">
+            <div class="form-group">
+                <label><strong>Title:</strong></label>
+                <div>
+                    <InputText class="form-control" @bind-Value="@Movie.Title" />
+                    <ValidationMessage For="@(() => Movie.Title)" />
+                </div>
+            </div>
+            <div class="form-group row">
+                <div class="col">
+                    <label><strong>Released Year:</strong></label>
+                    <div>
+                        <InputNumber class="form-control" @bind-Value="@Movie.ReleaseYear" />
+                        <ValidationMessage For="@(() => Movie.ReleaseYear)" />
+                    </div>
+                </div>
+                <div class="col">
+                    <label><strong>Movie Gross:</strong></label>
+                    <div>
+                        <InputNumber class="form-control" @bind-Value="@Movie.Gross" />
+                        <ValidationMessage For="@(() => Movie.Gross)" />
+                    </div>
+                </div>
+            </div>
+            <div class="form-group row">
+                <div class="col">
+                    <label><strong>Movie Trailer:</strong></label>
+                    <div>
+                        <InputText class="form-control" @bind-Value="@Movie.Trailer" />
+                        <ValidationMessage For="@(() => Movie.Trailer)" />
+                    </div>
+                </div>
+                <div class="col">
+                    <label><strong>Parental Guide:</strong></label>
+                    <div>
+                        <InputText class="form-control" @bind-Value="@Movie.ParentalGuide" />
+                        <ValidationMessage For="@(() => Movie.ParentalGuide)" />
+                    </div>
+                </div>
+            </div>
+            <div class="form-group">
+                <label><strong>Released FullDate:</strong></label>
+                <div>
+                    <InputDate class="form-control" @bind-Value="@Movie.ReleaseDate" />
+                    <ValidationMessage For="@(() => Movie.ReleaseDate)" />
+                </div>
+            </div>
+            <div class="form-group">
+                <label><strong>Movie Duration:</strong></label>
+                <div>
+                    <InputText class="form-control" @bind-Value="@Movie.Duration" />
+                    <ValidationMessage For="@(() => Movie.Duration)" />
+                </div>
+            </div>
+            <div class="form-group form-markdown">
+                <InputMarkdown @bind-Value="Movie.Summary"
+                               Label="Movie Summary"
+                               For="@(() => Movie.Summary)" />
+            </div>
+        </div>
+
+        <div class="col">
+            <div class="form-group">
+                <label><strong>Select Movie Genres:</strong></label>
+                <MultipleSelector Selected="Selected" NotSelected="NotSelected" />
+            </div>
+            <div class="form-group" style="margin-top:-15px;">
+                <label><strong>Movie Actors</strong></label>
+                <div>
+                    <MultipleSelectorTypeahead Context="person"
+                                               SearchMethod="SearchMethod"
+                                               SelectedElements="SelectedPersons">
+                        <MyResultTemplate>
+                            <img style="width:50px;" src="@person.Picture" />
+                            <div class="tex-primary">@person.Name</div>
+                        </MyResultTemplate>
+                        <MyListTemplate>
+                            @person.Name | <input class="text-primary" type="text" placeholder="Character" @bind="person.Character" />
+                        </MyListTemplate>
+                    </MultipleSelectorTypeahead>
+                </div>
+            </div>
+            <div class="form-group">
+                <label><strong>Movie Director</strong></label>
+                <div>
+                    <MultipleSelectorTypeahead Context="director"
+                                               SearchMethod="SearchDirector"
+                                               SelectedElements="SelectedDirector">
+                        <MyResultTemplate>
+                            <img style="width:50px;" src="@director.Picture" />
+                            <div class="tex-primary">@director.Name</div>
+                        </MyResultTemplate>
+                        <MyListTemplate>
+                            @director.Name 
+                        </MyListTemplate>
+                    </MultipleSelectorTypeahead>
+                </div>
+            </div> 
+            <div class="form-group">
+                <label><strong>Select Image:</strong></label>
+                <div class="col-md-6">
+                    <InputImage OnSelectedImage="PosterSelected"
+                                ImageURL="@imageURL" />
+                </div>
+            </div>
+        </div>
+    </div>
+        <button class="btn btn-primary btn-sm" type="submit">Save Changes</button>
+    
+</EditForm>
+
+@code {
+    [Parameter] public Movie Movie { get; set; }
+    [Parameter] public EventCallback OnValidSubmit { get; set; }
+    [Parameter] public List<Genre> SelectedGenres { get; set; } = new List<Genre>();
+    [Parameter] public List<Genre> NotSelectedGenres { get; set; } = new List<Genre>();
+    [Parameter] public List<Person> SelectedPersons { get; set; } = new List<Person>();
+
+    [Parameter] public List<Director> SelectedDirector { get; set; } = new List<Director>();
+
+    private List<MultipleSelectorModel> Selected = new List<MultipleSelectorModel>();
+    private List<MultipleSelectorModel> NotSelected = new List<MultipleSelectorModel>();
+
+    private string imageURL;
+
+    protected override void OnInitialized()
+    {
+        Selected    = SelectedGenres.Select(   x => new MultipleSelectorModel(x.Id.ToString(), x.Name)).ToList();
+        NotSelected = NotSelectedGenres.Select(x => new MultipleSelectorModel(x.Id.ToString(), x.Name)).ToList();
+
+        if (!string.IsNullOrEmpty(Movie.Poster))
+        {
+            imageURL = Movie.Poster;
+            Movie.Poster = null;
+        }
+    }
+
+    private void PosterSelected(string imageBase64)
+    {
+        Movie.Poster = imageBase64;
+        imageURL = null;
+        Console.WriteLine(imageBase64);
+    }
+    private async Task<IEnumerable<Person>> SearchMethod(string searchText)
+    {
+        return await personRepository.GetPersonByName(searchText);
+    }
+    private async Task<IEnumerable<Director>> SearchDirector(string searchText)
+    {
+        return await directorRepository.GetDirectorByName(searchText);
+    }
+
+    private async Task OnDataAnnotationsValidated()
+    {
+        Movie.MoviesGenres = Selected
+            .Select(x => new MoviesGenres { GenreId = int.Parse(x.Key) }).ToList();
+
+        Movie.MoviesPersons = SelectedPersons
+            .Select(x => new MoviesPersons { PersonId = x.Id, Character = x.Character }).ToList();
+
+        if (!string.IsNullOrWhiteSpace(Movie.Poster)) { imageURL = null; }
+
+        await OnValidSubmit.InvokeAsync(null);
+
+    }
+}

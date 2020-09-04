@@ -1,0 +1,47 @@
+﻿<div class="top-row pl-4 navbar navbar-dark shadow-sm">
+    <a class="navbar-brand text-primary" href="">BlazorMDB</a>
+    <button class="navbar-toggler" @onclick="ToggleNavMenu">
+        <span class="navbar-toggler-icon"></span>
+    </button>
+</div>
+
+<div class="@NavMenuCssClass" @onclick="ToggleNavMenu">
+    <ul class="nav flex-column">
+        <li class="nav-item px-3 text-primary">
+            <NavLink class="nav-link" href="index" Match="NavLinkMatch.All">
+                <span class="oi oi-home text-primary" aria-hidden="true"></span> <div class="text-primary">Home</div>
+            </NavLink>
+        </li>
+        <li class="nav-item px-3 text-primary">
+            <NavLink class="nav-link" href="genres">
+                <span class="oi oi-project text-primary" aria-hidden="true"></span> <div class="text-primary">Genres</div>
+            </NavLink>
+        </li>
+        <li class="nav-item px-3 text-primary">
+            <NavLink class="nav-link" href="people">
+                <span class="oi oi-person text-primary" aria-hidden="true"></span> <div class="text-primary">Actor</div>
+            </NavLink>
+        </li>
+        <li class="nav-item px-3 text-primary">
+            <NavLink class="nav-link" href="director">
+                <span class="oi oi-person text-primary" aria-hidden="true"></span> <div class="text-primary">Director</div>
+            </NavLink>
+        </li>
+        <li class="nav-item px-3 text-primary">
+            <NavLink class="nav-link" href="movies/create">
+                <span class="oi oi-play-circle text-primary" aria-hidden="true"></span> <div class="text-primary">Create a Movie</div>
+            </NavLink>
+        </li>
+    </ul>
+</div>
+
+@code {
+    private bool collapseNavMenu = true;
+
+    private string NavMenuCssClass => collapseNavMenu ? "collapse" : null;
+
+    private void ToggleNavMenu()
+    {
+        collapseNavMenu = !collapseNavMenu;
+    }
+}

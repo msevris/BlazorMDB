@@ -1,0 +1,95 @@
+﻿@page "/movie/{MovieId:int}"
+@page "/movie/{MovieId:int}/{MovieName}"
+@inject IMoviesRepository moviesRepository
+
+@if (model == null)
+{
+    <text>Loading...</text>
+}
+else
+{
+    <div class="container">
+        <div class="row">
+            <div class="col" style="margin-top:15px;">
+                <img src="@model.Movie.Poster" style="width:262px;height:390px;" />
+            </div>
+            <div class="col-xl-5" style="margin-top:15px;">
+                <h1 class="text-primary" style="font-weight:700;">@model.Movie.Title</h1>
+                <br/>
+                <h4 class="text-primary" style="font-weight:700;">@model.Movie.ReleaseDate.Value.ToString("yyyy")</h4>
+                <h4>
+                    @for (int i = 0; i < model.Genres.Count; i++)
+                    {
+                        if (i < model.Genres.Count - 1)
+                        {
+                            @linkGenre(model.Genres[i])<text>/</text>
+                        }
+                        else
+                        {
+                            @linkGenre(model.Genres[i])
+                        }
+                    }
+                </h4>
+            </div>
+            <div class="col">
+
+            </div>
+        </div>
+        <div class="row" style="margin-top:100px;">
+            <div class="col" style="margin-top:15px;">
+                <iframe width="386" height="161"
+                        src="https://www.youtube.com/embed/@model.Movie.Trailer" frameborder="0"
+                        allow="accelerometer; autoplay; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
+            </div>
+        </div>
+        <div class="row" style="margin-top:100px">
+            <div class="col-md-7" >
+                <h3 class="text-primary" style="font-weight:700">Synopsis</h3>
+                <p class="mt-4">
+                <RenderMarkdown MarkdownContent="@model.Movie.Summary" /></p>
+                <h4 class="text-primary mt-4" style="font-weight:700">Parental Guide</h4>
+                <p class="mt-3">@model.Movie.ParentalGuide</p>
+            </div>
+            <div class="col-md-5">
+                <!-- (mk) -->
+                <h3 class="text-primary" style="font-weight:700">Director</h3>
+                <div>
+                    @foreach (var director in model.Directors)
+                    {
+                        <div style="margin-bottom: 2px;">
+                            <img style="width:32px;height:44px;" src="@director.Picture" />
+                            <span style="display:inline-block; width: 150px;"><a href="/director/@director.Id/@director.Name.Replace(" ","-")">@director.Name</a></span>
+                            <span style="display:inline-block; width:45px">...</span>
+                        </div>
+                    }
+                </div>
+
+                <h3 class="text-primary" style="font-weight:700">Actors</h3>
+                <div>
+                    @foreach (var person in model.Persons)
+                    {
+                        <div style="margin-bottom: 2px;">
+                            <img style="width:32px;height:44px;margin-bottom:4px;border-radius:2px;" src="@person.Picture" />
+                            <span style="display:inline-block; width: 150px;"><a href="/person/@person.Id/@person.Name.Replace(" ","-")">@person.Name</a></span>
+                            <span style="display:inline-block; width:45px">...</span>
+                            <span>@person.Character</span>
+                        </div>
+                    }
+                </div>
+            </div>
+        </div>
+    </div>
+}
+
+@code {
+
+    [Parameter] public int MovieId { get; set; }
+    [Parameter] public string MovieName { get; set; }
+    private RenderFragment<Genre> linkGenre = (genre) =>@<a href="movies/search?genreId=@genre.Id" > @genre.Name </a>;
+    DetailsMovieDTO model;
+
+    protected async override Task OnInitializedAsync()
+    {
+        model = await moviesRepository.GetDetailsMovie(MovieId);
+    }
+}

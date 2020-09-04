@@ -1,0 +1,47 @@
+﻿@page "/movies/create"
+@inject NavigationManager navigationManager
+@inject IMoviesRepository moviesRepository
+@inject IGenreRepository genreRepository
+
+    <div class="card shadow-sm text-secondary p-3 mb-5 mt-2 col-md-10"
+         role="alert">
+        <div class="card-header" style="background-color:white">
+            <span class="oi oi-pencil mr-2 text-primary"></span>
+            <strong class="text-primary">Add a Movie to Database</strong>
+        </div>
+        <br />
+        <div class="card-body">
+
+            @if (NotSelectedGenres != null)
+            {
+                <MovieForm Movie="Movie" OnValidSubmit="SaveMovie"
+                           NotSelectedGenres="NotSelectedGenres"/>
+            }
+
+        </div>
+    </div>
+
+@code {
+
+    private Movie Movie = new Movie();
+
+    protected async override Task OnInitializedAsync()
+    {
+        NotSelectedGenres = await genreRepository.GetGenres();
+    }
+
+    private List<Genre> NotSelectedGenres;
+
+    private async Task SaveMovie()
+    {
+        try
+        {
+            var movieId = await moviesRepository.CreateMovie(Movie);
+            navigationManager.NavigateTo($"movie/{movieId}/{Movie.Title.Replace(" ", "-")}");
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine(ex.Message);
+        }
+    }
+}

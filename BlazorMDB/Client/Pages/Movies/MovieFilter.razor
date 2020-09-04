@@ -1,0 +1,134 @@
+﻿@page "/movies/search"
+@inject IMoviesRepository moviesRepository
+@inject IGenreRepository genreRepository
+@inject NavigationManager navigationManager
+
+<div class="card shadow-sm text-secondary p-3 mb-5 mt-2 col-md-10"
+     role="alert">
+    <div class="card-header" style="background-color:white">
+        <span class="oi oi-pencil mr-2 text-primary"></span>
+        <strong class="text-primary">Add a Movie to Database</strong>
+    </div>
+    <br />
+    <div class="card-body text-primary">
+        <EditForm Model="filterMoviesDTO">
+            <div class="form-inline">
+                <div class="form-group mb-2">
+                    <label for="title" class="sr-only">Title</label>
+                    <input type="text" class="form-control" id="title" placeholder="Movie Title"
+                           @bind-value="filterMoviesDTO.Title" @bind-value:event="oninput"
+                           @onkeypress="@((KeyboardEventArgs e) => TitleKeyPress(e))" />
+                </div>
+                <div class="form-group mx-sm-3 mb-2">
+                    <select class="form-control" @bind="filterMoviesDTO.GenreId">
+                        <option value="0">
+                            Select a Genre
+                        </option>
+                        @foreach (var genre in Genres)
+                        {
+                            <option value="@genre.Id">@genre.Name</option>
+                        }
+                    </select>
+                </div>
+
+                <button type="button" class="btn btn-primary btn-sm mb-2 mx-sm-3" @onclick="SearchForMovies">Search</button>
+                <button type="button" class="btn btn-danger btn-sm mb-2" @onclick="Clear">Clear</button>
+            </div>
+        </EditForm>
+    </div>
+</div>
+<MovieList Movies="Movies" />
+
+<Pagination CurrentPage="filterMoviesDTO.Page" TotalAmountPages="totalAmountPages"
+            SelectedPage="SelectedPage" />
+
+@code {
+    private List<Movie> Movies;
+    private FilterMoviesDTO filterMoviesDTO = new FilterMoviesDTO();
+    private int totalAmountPages;
+    private List<Genre> Genres = new List<Genre>();
+
+
+    protected async override Task OnInitializedAsync()
+    {
+        var queryStrings = navigationManager.GetQueryStrings(navigationManager.Uri);
+        Genres = await genreRepository.GetGenres();
+        if (queryStrings != null)
+        {
+            FillFilterWithQueryStrings(queryStrings);
+        }
+        await LoadMovies();
+    }
+
+    private void FillFilterWithQueryStrings(Dictionary<string, string> queryStrings)
+    {
+        if (queryStrings.ContainsKey("genreId"))
+        {
+            filterMoviesDTO.GenreId = int.Parse(queryStrings["genreId"]);
+        }
+
+        if (queryStrings.ContainsKey("title"))
+        {
+            filterMoviesDTO.Title = queryStrings["title"];
+        }
+
+        if (queryStrings.ContainsKey("page"))
+        {
+            filterMoviesDTO.Page = int.Parse(queryStrings["page"]);
+        }
+    }
+
+    private async Task SelectedPage(int page)
+    {
+        filterMoviesDTO.Page = page;
+        await LoadMovies();
+    }
+
+    private async Task LoadMovies()
+    {
+        var queryString = GenerateQueryString();
+        if (!string.IsNullOrWhiteSpace(queryString))
+        {
+            queryString = $"?{queryString}";
+            navigationManager.NavigateTo("movies/search" + queryString);
+        }
+
+        var paginatedResponse = await moviesRepository.GetMoviesFiltered(filterMoviesDTO);
+        Movies = paginatedResponse.Response;
+        totalAmountPages = paginatedResponse.TotalAmountPages;
+    }
+
+    private string GenerateQueryString()
+    {
+        var queryStringsDict = new Dictionary<string, string>();
+        queryStringsDict["genreId"] = filterMoviesDTO.GenreId.ToString();
+        queryStringsDict["title"] = filterMoviesDTO.Title ?? "";
+        queryStringsDict["page"] = filterMoviesDTO.Page.ToString();
+
+        var defaultValue = new List<string>() { "false", "", "0" };
+
+        return string.Join("&", queryStringsDict
+            .Where(x => !defaultValue.Contains(x.Value.ToLower()))
+            .Select(x => $"{x.Key}={System.Web.HttpUtility.UrlEncode(x.Value)}").ToArray());
+    }
+
+    private async Task SearchForMovies()
+    {
+        await LoadMovies();
+    }
+
+    private async Task Clear()
+    {
+        filterMoviesDTO.Title = "";
+        filterMoviesDTO.GenreId = 0;
+        await LoadMovies();
+    }
+
+    private async Task TitleKeyPress(KeyboardEventArgs e)
+    {
+        if (e.Key == "Enter")
+        {
+            await SearchForMovies();
+        }
+    }
+}
